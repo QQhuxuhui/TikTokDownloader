@@ -10,6 +10,13 @@ fi
 input_folder="$1"
 output_folder="$2"
 
+# 检查输出文件夹是否存在，如果不存在则创建
+if [ ! -d "$output_folder" ]; then
+  mkdir -p "$output_folder"
+  echo "已创建输出文件夹: $output_folder"
+fi
+
+
 # 创建临时文件夹
 temp_folder=$(mktemp -d)
 
@@ -42,22 +49,14 @@ for input_file in "$input_folder"/*.mp4; do
     ffmpeg -i "$temp_folder/${new_filename}.mp4" -y -vf hflip -c:a copy "$temp_folder/${new_filename}_temp.mp4"
 
     # 执行 ffmpeg 操作 - 步骤 2 变速
-    ffmpeg -i "$temp_folder/${new_filename}_temp.mp4" -y -vf setpts=PTS/0.97 -af atempo=0.97 "$temp_folder/${new_filename}_temp2.mp4"
+    ffmpeg -i "$temp_folder/${new_filename}_temp.mp4" -y -vf setpts=PTS/0.97 -af atempo=0.97 "$temp_folder/${new_filename}_temp1.mp4"
 
-    # 执行 ffmpeg 操作 - 步骤 3 色彩饱和度
-    ffmpeg -i "$temp_folder/${new_filename}_temp2.mp4" -y -vf eq=contrast=1.04:brightness=0.01:saturation=1.5 -r 25 -vcodec libx264 -crf 26 "$temp_folder/${new_filename}_temp3.mp4"
+	# 执行 ffmpeg 操作 - 步骤 3 旋转1% 截去斜边
+    ffmpeg -i "$temp_folder/${new_filename}_temp1.mp4" -y -vf "rotate=1*PI/180,crop=in_w*0.92:in_h*0.94" "$temp_folder/${new_filename}_temp2.mp4"
 
-	# 执行 ffmpeg 操作 - 步骤 4 旋转1% 截去斜边
-    ffmpeg -i "$temp_folder/${new_filename}_temp3.mp4" -y -vf "rotate=1*PI/180,crop=in_w*0.92:in_h*0.94" "$temp_folder/${new_filename}_temp4.mp4"
+	# 执行 ffmpeg 操作 - 步骤 4 抽帧
+	ffmpeg -i "$temp_folder/${new_filename}_temp2.mp4" -y -vf "select='mod(n,20)'" -vsync vfr "$output_folder/${new_filename}_out.mp4"
 
-	# 执行 ffmpeg 操作 - 步骤 5 抽帧
-	ffmpeg -i "$temp_folder/${new_filename}_temp4.mp4" -y -vf "select='mod(n,20)'" -vsync vfr "$temp_folder/${new_filename}_temp5.mp4"
-	
-	# 执行 ffmpeg 操作 - 步骤 6 开幕闭幕
-#	ffmpeg -i "$temp_folder/${new_filename}_temp5.mp4" -y -vf "zoompan=z='min(max(zoom,pzoom)+0.0001,1.5)':d=1, fade=in:0:2, setsar=1, boxblur=10:5:enable='between(t,0,2)'" -c:a copy -c:v libx264 -crf 18 -preset veryfast "$temp_folder/${new_filename}_temp6.mp4"
-	
-    # 执行 ffmpeg 操作 - 步骤 7 视频广角
-    ffmpeg -i "$temp_folder/${new_filename}_temp4.mp4" -y -vf "lenscorrection=cx=0.5:cy=0.5:k1=-0.2:k2=-0.1" "$output_folder/${new_filename}_out.mp4"
 	
     # 删除中间文件
     cleanup_temp_files
