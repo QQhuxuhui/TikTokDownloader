@@ -25,7 +25,7 @@
     "split": "-",
     "folder_mode": false,
     "music": false,
-    "storage_format": "",
+    "storage_format": "xlsx",
     "cookie": "",
     "dynamic_cover": false,
     "original_cover": false,
