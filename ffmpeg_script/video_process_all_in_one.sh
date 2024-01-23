@@ -41,23 +41,10 @@ for input_file in "$input_folder"/*.mp4; do
 
     # 创建新的没有空格的文件名
     new_filename="${filename// /_}"
+    	
+    # 执行 ffmpeg 镜像  变速  旋转1% 截去斜边 抽帧
+    ffmpeg -i "$input_file" -y -filter_complex "[0:v]hflip,setpts=PTS/0.97,rotate=1*PI/180,crop=in_w*0.92:in_h*0.94,select='mod(n,20)'[outv];[0:a]atempo=0.97[aout]" -map "[outv]" -map "[aout]" -c:v libx264 -c:a aac -strict experimental "$output_folder/${new_filename}_out.mp4"
 
-    # 复制源文件到一个没有空格的新文件名
-    cp "$input_file" "$temp_folder/${new_filename}.mp4"
-
-    # 执行 ffmpeg 操作 - 步骤 1 镜像
-    ffmpeg -i "$temp_folder/${new_filename}.mp4" -y -vf hflip -c:a copy "$temp_folder/${new_filename}_temp.mp4"
-
-    # 执行 ffmpeg 操作 - 步骤 2 变速
-    ffmpeg -i "$temp_folder/${new_filename}_temp.mp4" -y -vf setpts=PTS/0.97 -af atempo=0.97 "$temp_folder/${new_filename}_temp1.mp4"
-
-	# 执行 ffmpeg 操作 - 步骤 3 旋转1% 截去斜边
-    ffmpeg -i "$temp_folder/${new_filename}_temp1.mp4" -y -vf "rotate=1*PI/180,crop=in_w*0.92:in_h*0.94" "$temp_folder/${new_filename}_temp2.mp4"
-
-    # 执行 ffmpeg 操作 - 步骤 4 抽帧
-    ffmpeg -i "$temp_folder/${new_filename}_temp2.mp4" -y -vf "select='mod(n,20)'" -vsync vfr "$output_folder/${new_filename}_out.mp4"
-
-	
     # 删除中间文件
     cleanup_temp_files
   fi
