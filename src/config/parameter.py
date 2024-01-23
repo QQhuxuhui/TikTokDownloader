@@ -1,16 +1,25 @@
 from pathlib import Path
 from time import localtime
 from time import strftime
+from types import SimpleNamespace
+from typing import TYPE_CHECKING
 
 from requests import exceptions
 from requests import get
 
-from src.DataExtractor import Extractor
-from src.Parameter import MsToken
-from src.Parameter import TtWid
+from src.encrypt import MsToken
+from src.encrypt import TtWid
+from src.extract import Extractor
 from src.module import Cleaner
+from src.module import ColorfulConsole
+from src.module import Cookie
 from src.module import FFMPEG
 from src.module import Register
+from src.storage import RecordManager
+from .settings import Settings
+
+if TYPE_CHECKING:
+    from src.manager import DownloadRecorder
 
 __all__ = ["Parameter"]
 
@@ -29,14 +38,14 @@ class Parameter:
 
     def __init__(
             self,
-            settings,
-            cookie_object,
+            settings: Settings,
+            cookie_object: Cookie,
             main_path: Path,
             user_agent: str,
             ua_code: tuple,
             logger,
             xb,
-            console,
+            console: ColorfulConsole,
             cookie: dict | str,
             root: str,
             accounts_urls: dict,
@@ -59,7 +68,7 @@ class Parameter:
             default_mode: int,
             owner_url: dict,
             ffmpeg: str,
-            blacklist,
+            blacklist: "DownloadRecorder",
             timeout=10,
             **kwargs,
     ):
@@ -82,22 +91,25 @@ class Parameter:
         self.name_format = self.check_name_format(name_format)
         self.date_format = self.check_date_format(date_format)
         self.split = self.check_split(split)
-        self.music = music
-        self.folder_mode = folder_mode
+        self.music = self._check_bool(music)
+        self.folder_mode = self._check_bool(folder_mode)
         self.storage_format = self.check_storage_format(storage_format)
-        self.dynamic_cover = dynamic_cover
-        self.original_cover = original_cover
+        self.dynamic_cover = self._check_bool(dynamic_cover)
+        self.original_cover = self._check_bool(original_cover)
         self.proxies = self.check_proxies(proxies)
-        self.download = download
+        self.download = self._check_bool(download)
         self.max_size = self.check_max_size(max_size)
         self.chunk = self.check_chunk(chunk)
         self.max_retry = self.check_max_retry(max_retry)
         self.max_pages = self.check_max_pages(max_pages)
         self.blacklist = blacklist
         self.timeout = self.check_timeout(timeout)
-        self.accounts_urls = Extractor.generate_data_object(accounts_urls)
-        self.mix_urls = Extractor.generate_data_object(mix_urls)
-        self.owner_url = Extractor.generate_data_object(owner_url)
+        self.accounts_urls: SimpleNamespace = Extractor.generate_data_object(
+            accounts_urls)
+        self.mix_urls: SimpleNamespace = Extractor.generate_data_object(
+            mix_urls)
+        self.owner_url: SimpleNamespace = Extractor.generate_data_object(
+            owner_url)
         self.default_mode = self.check_default_mode(default_mode)
         self.preview = "static/images/blank.png"
         self.ffmpeg = self._generate_ffmpeg_object(ffmpeg)
@@ -126,8 +138,8 @@ class Parameter:
         }
 
     @staticmethod
-    def _check_bool(value: bool) -> bool:
-        return value if isinstance(value, bool) else False
+    def _check_bool(value: bool, default=False) -> bool:
+        return value if isinstance(value, bool) else default
 
     def check_cookie(self, cookie: dict | str) -> dict:
         if isinstance(cookie, dict):
@@ -272,7 +284,7 @@ class Parameter:
         return 10
 
     def check_storage_format(self, storage_format: str) -> str:
-        if storage_format in {"xlsx", "csv", "sql"}:
+        if storage_format in RecordManager.DataLogger.keys():
             self.logger.info(f"storage_format 参数已设置为 {storage_format}", False)
             return storage_format
         if not storage_format:
@@ -289,7 +301,7 @@ class Parameter:
             self.logger.warning(f"default_mode 参数 {default_mode} 设置错误")
         return "0"
 
-    def update_cookie(self):
+    def update_cookie(self) -> None:
         # self.console.print("Update Cookie")
         if self.cookie:
             self.add_cookie(self.cookie)
@@ -298,7 +310,7 @@ class Parameter:
             self.headers["Cookie"] = self.add_cookie(self.cookie_cache)
 
     @staticmethod
-    def _generate_ffmpeg_object(ffmpeg_path: str):
+    def _generate_ffmpeg_object(ffmpeg_path: str) -> FFMPEG:
         return FFMPEG(ffmpeg_path)
 
     def get_settings_data(self) -> dict:
@@ -327,7 +339,7 @@ class Parameter:
             "ffmpeg": self.ffmpeg.path or "",
         }
 
-    def update_settings_data(self, data: dict, ):
+    def update_settings_data(self, data: dict, ) -> dict:
         for key, value in data.items():
             if key in list(self.check_rules.keys())[3:]:
                 # print(key, hasattr(self, key))  # 调试使用

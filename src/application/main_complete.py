@@ -1,3 +1,4 @@
+from contextlib import suppress
 from datetime import date
 from datetime import datetime
 from random import choice
@@ -17,14 +18,14 @@ from src.DataAcquirer import (
     Collection,
 )
 from src.DataDownloader import Downloader
-from src.DataExtractor import Extractor
-from src.Recorder import RecordManager
 from src.custom import (
     WARNING,
 )
 from src.custom import failure_handling
 from src.custom import suspend
+from src.extract import Extractor
 from src.manager import Cache
+from src.storage import RecordManager
 from src.tools import TikTokAccount
 from src.tools import choose
 
@@ -111,6 +112,18 @@ class TikTok:
             parameter,
             "mark" in parameter.name_format,
             "nickname" in parameter.name_format
+        )
+        self.function = (
+            ("批量下载账号作品(TikTok)", self.account_acquisition_interactive_tiktok,),
+            ("批量下载账号作品(抖音)", self.account_acquisition_interactive,),
+            ("批量下载链接作品(通用)", self.works_interactive,),
+            ("获取直播推流地址(抖音)", self.live_interactive,),
+            ("采集作品评论数据(抖音)", self.comment_interactive,),
+            ("批量下载合集作品(抖音)", self.mix_interactive,),
+            ("批量采集账号数据(抖音)", self.user_interactive,),
+            ("采集搜索结果数据(抖音)", self.search_interactive,),
+            ("采集抖音热榜数据(抖音)", self.hot_interactive,),
+            ("批量下载收藏作品(抖音)", self.collection_interactive,),
         )
 
     def _inquire_input(self, url: str = None, tip: str = None) -> str:
@@ -335,7 +348,7 @@ class TikTok:
             m := self.cache.data.get(
                 mid if mix else id_)) else None
         with logger(root, name=f"{'MID' if mix else 'UID'}{mid if mix else id_}_{mark}_{addition}", old=old_mark,
-                    **params) as recorder:
+                    console=self.console, **params) as recorder:
             data = self.extractor.run(
                 data,
                 recorder,
@@ -382,7 +395,7 @@ class TikTok:
 
     def works_interactive(self):
         root, params, logger = self.record.run(self.parameter)
-        with logger(root, **params) as record:
+        with logger(root, console=self.console, **params) as record:
             while url := self._inquire_input("作品"):
                 tiktok, ids = self.links.works(url)
                 if not any(ids):
@@ -505,7 +518,7 @@ class TikTok:
                 continue
             for i in ids:
                 name = f"作品{i}_评论数据"
-                with logger(root, name=name, **params) as record:
+                with logger(root, name=name, console=self.console, **params) as record:
                     if Comment(self.parameter, i).run(self.extractor, record):
                         self.logger.info(f"作品评论数据已储存至 {name}")
                     else:
@@ -645,7 +658,7 @@ class TikTok:
             return None
         if source:
             return data
-        with logger(root, name="UserData", **params) as recorder:
+        with logger(root, name="UserData", console=self.console, **params) as recorder:
             data = self.extractor.run(data, recorder, type_="user")
         self.logger.info("账号数据已保存至文件")
         return data
@@ -763,7 +776,7 @@ class TikTok:
             keyword, type_[1], sort[1], publish[1])
         root, params, logger = self.record.run(self.parameter,
                                                type_=self.DATA_TYPE[type_[0]])
-        with logger(root, name=name, **params) as logger:
+        with logger(root, name=name, console=self.console, **params) as logger:
             search_data = self.extractor.run(
                 search_data,
                 logger,
@@ -788,7 +801,7 @@ class TikTok:
         data = []
         for i, j in board:
             name = f"实时热榜数据_{time_}_{Hot.board_params[i].name}"
-            with logger(root, name=name, **params) as record:
+            with logger(root, name=name, console=self.console, **params) as record:
                 data.append(
                     {Hot.board_params[i].name: self.extractor.run(j, record, type_="hot")})
         self.logger.info(f"热榜数据已储存至: 实时热榜数据_{time_} + 榜单类型")
@@ -837,53 +850,15 @@ class TikTok:
             addition="收藏作品", )
 
     def run(self):
-        while self.running:
-            select = choose(
-                "请选择采集功能",
-                (
-                    "批量下载账号作品(TikTok)",
-                    "批量下载账号作品(抖音)",
-                    "批量下载链接作品(通用)",
-                    "获取直播推流地址(抖音)",
-                    "采集作品评论数据(抖音)",
-                    "批量下载合集作品(抖音)",
-                    "批量采集账号数据(抖音)",
-                    "采集搜索结果数据(抖音)",
-                    "采集抖音热榜数据(抖音)",
-                    "批量下载收藏作品(抖音)",
-                ),
-                self.console)
-            if select in {"Q", "q"}:
-                self.running = False
-            elif not select:
-                break
-            elif select == "1":
-                self.logger.info("已选择批量下载账号作品(TikTok)模式")
-                self.account_acquisition_interactive_tiktok()
-            elif select == "2":
-                self.logger.info("已选择批量下载账号作品(抖音)模式")
-                self.account_acquisition_interactive()
-            elif select == "3":
-                self.logger.info("已选择批量下载链接作品模式")
-                self.works_interactive()
-            elif select == "4":
-                self.logger.info("已选择获取直播推流地址模式")
-                self.live_interactive()
-            elif select == "5":
-                self.logger.info("已选择采集作品评论数据模式")
-                self.comment_interactive()
-            elif select == "6":
-                self.logger.info("已选择批量下载合集作品模式")
-                self.mix_interactive()
-            elif select == "7":
-                self.logger.info("已选择批量采集账号数据模式")
-                self.user_interactive()
-            elif select == "8":
-                self.logger.info("已选择采集搜索结果数据模式")
-                self.search_interactive()
-            elif select == "9":
-                self.logger.info("已选择采集抖音热榜数据模式")
-                self.hot_interactive()
-            elif select == "10":
-                self.logger.info("已选择批量下载收藏作品模式")
-                self.collection_interactive()
+        with suppress(ValueError):
+            while self.running:
+                select = choose(
+                    "请选择采集功能",
+                    [i for i, _ in self.function],
+                    self.console)
+                if select in {"Q", "q"}:
+                    self.running = False
+                elif not select:
+                    break
+                elif (n := int(select) - 1) in range(len(self.function)):
+                    self.function[n][1]()

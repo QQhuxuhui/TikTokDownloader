@@ -16,12 +16,12 @@ from rich.progress import (
     TimeElapsedColumn,
 )
 
-from src.DataExtractor import Extractor
 from src.config import Parameter
 from src.custom import (
     PROGRESS
 )
 from src.custom import wait
+from src.extract import Extractor
 from src.tools import retry
 from src.tools import timestamp
 
@@ -208,6 +208,12 @@ class Link:
     works_share = compile(
         r"\S*?https://www\.iesdouyin\.com/share/(?:video|note)/([0-9]{19})/\S*?"
     )  # 作品分享链接
+    works_search = compile(
+        r"\S*?https://www\.douyin\.com/search/\S+?modal_id=(\d{19})\S*?"
+    )  # 搜索作品链接
+    works_discover = compile(
+        r"\S*?https://www\.douyin\.com/discover\S*?modal_id=(\d{19})\S*?"
+    )  # 首页作品链接
     mix_link = compile(
         r"\S*?https://www\.douyin\.com/collection/(\d{19})\S*?")  # 合集链接
     mix_share = compile(
@@ -233,7 +239,7 @@ class Link:
         share = self.account_share.findall(urls)
         return link + share
 
-    def works(self, text: str) -> tuple:
+    def works(self, text: str) -> tuple[bool, list]:
         urls = self.share.run(text)
         if u := self.works_link_tiktok.findall(urls):
             return True, u
@@ -241,19 +247,21 @@ class Link:
         share = self.works_share.findall(urls)
         account = [i for i in [i[1]
                                for i in self.account_link.findall(urls)] if i]
-        return False, link + share + account
+        search = self.works_search.findall(urls)
+        discover = self.works_discover.findall(urls)
+        return False, link + share + account + search + discover
 
     def mix(self, text: str) -> tuple:
         urls = self.share.run(text)
-        if u := self.works_share.findall(urls):
+        share = self.works_share.findall(urls)
+        link = self.works_link.findall(urls)
+        search = self.works_search.findall(urls)
+        discover = self.works_discover.findall(urls)
+        if u := share + link + search + discover:
             return False, u
-        elif u := self.works_link.findall(urls):
-            return False, u
-        elif u := self.mix_link.findall(urls):
-            return True, u
-        elif u := self.mix_share.findall(urls):
-            return True, u
-        return None, []
+        link = self.mix_link.findall(urls)
+        share = self.mix_share.findall(urls)
+        return True, u if (u := link + share) else None, []
 
     def live(self, text: str) -> tuple:
         urls = self.share.run(text)
@@ -586,9 +594,8 @@ class Comment(Acquirer):
             self.log.warning("获取作品评论数据失败")
             return False
         try:
-            if not (c := data["comments"]):
-                raise KeyError
-            self.deal_item_data(c)
+            if c := data["comments"]:
+                self.deal_item_data(c)
             self.cursor = data["cursor"]
             self.finished = not data["has_more"]
             return True
@@ -883,7 +890,7 @@ class Search(Acquirer):
             "sort_type": self.sort_type,
             "publish_time": self.publish_time,
             "keyword": self.keyword,
-            "search_source": "switch_tab",
+            "search_source": "tab_search",
             "query_correct_type": "1",
             "is_filter_search": {True: 1, False: 0}[any((self.sort_type, self.publish_time))],
             "from_group_id": "",

@@ -54,11 +54,11 @@
 
 # 💻 程序界面\(Screenshot\)
 
-**终端命令行模式：**
+**终端交互模式：**
 <br><br>
-![终端模式截图](docs/终端模式截图1.png)
+![终端模式截图](docs/终端交互模式截图1.png)
 *****
-![终端模式截图](docs/终端模式截图2.png)
+![终端模式截图](docs/终端交互模式截图2.png)
 <br><br>
 **Web UI 交互模式：**
 <br><br>
@@ -85,18 +85,20 @@
 * 🟢 [Releases](https://github.com/JoeanAmier/TikTokDownloader/releases/latest) 发布的源码已完成测试，所有功能均可正常使用
 * 🟢 正在重构项目代码，优化项目结构
 * 🟢 正在使用协程技术优化项目代码
+* 🟡 未来可能新增监听剪贴板下载作品功能
 * 🟡 未来可能新增可视化编辑配置文件功能
-* 🟡 未来可能支持更多抖音热榜类型
 * 🟡 未来可能新增终端文本用户界面\(TUI\)模式
 * 🟡 未来可能支持全功能版的 Web UI 交互模式
-* 🟡 未来可能新增监听剪贴板下载作品功能
 * 🟡 未来可能新增账号新作品监测功能
 * 🟡 未来可能新增合集新作品监测功能
 * 🟡 未来可能新增直播开播监测功能
-* 🟡 未来可能新增调用 API 下载作品文件功能
+* 🟡 未来可能新增调用 API 下载作品功能
 * 🟡 未来可能优化 TikTok 平台批量下载功能
-* 🟡 ~~未来可能新增获取账号关注列表功能~~
-* 🟡 ~~未来可能新增获取账号收藏合集列表功能~~
+* 🟡 未来可能支持 TikTok 平台更多功能
+* 🟡 未来可能移除项目部分数据采集功能
+* 🟡 未来可能支持更多抖音热榜类型
+* 🟡 未来可能新增获取账号关注列表功能
+* 🟡 未来可能新增获取账号收藏合集列表功能
 * 🔴 最新版本的源码可能存在不稳定的 Bug
 * 🔴 如果在使用过程中发现程序 Bug，请及时告知作者修复
 * 🔴 采集 TikTok 图集作品导致异常退出，已修复
@@ -128,13 +130,13 @@
 <li>参考 <a href="https://github.com/JoeanAmier/TikTokDownloader/blob/master/docs/Cookie%E6%95%99%E7%A8%8B.md">Cookie 提取教程</a>，复制所需 Cookie 至剪贴板</li>
 <li>选择 <code>复制粘贴写入 Cookie</code> 选项，按照提示将 Cookie 写入配置文件</li>
 </ol>
-<ol><b>扫码登录获取</b>
+<ol><b>扫码登录获取(即将移除)</b>
 <li>选择 <code>扫码登陆写入 Cookie</code> 选项，程序会显示登录二维码图片，并使用默认应用打开图片</li>
 <li>使用抖音 APP 扫描二维码并登录账号</li>
 <li>按照提示操作，将 Cookie 写入配置文件</li>
 </ol>
 </li>
-<li>返回程序界面，依次选择 <code>终端命令行模式</code> -> <code>批量下载链接作品</code></li>
+<li>返回程序界面，依次选择 <code>终端交互模式</code> -> <code>批量下载链接作品</code></li>
 <li>输入抖音或 TikTok 作品链接即可下载作品文件</li>
 <li>更多详细说明请查看 <b><a href="https://github.com/JoeanAmier/TikTokDownloader/wiki/Documentation">项目文档</a></b></li>
 </ol>
@@ -217,9 +219,6 @@
 <li>QQ Group: <a href="https://github.com/JoeanAmier/TikTokDownloader/blob/master/docs/QQ%E7%BE%A4%E8%81%8A%E4%BA%8C%E7%BB%B4%E7%A0%81.png">点击扫码加入群聊</a></li>
 <li>Email: yonglelolu@gmail.com</li>
 </ul>
-<p>
-<b>TikTokDownloader 是我个人独立维护的一个开源项目，鉴于个人精力有限，请理解项目进展可能较为缓慢，我会尽力保持更新和维护，以确保项目的稳定性和功能的不断改进。</b>
-</p>
 <p>
 <b>如果您通过 Email 联系我，我可能无法及时查看并回复信息，我会尽力在七天内回复您的邮件；如果有紧急事项或需要更快的回复，请通过其他方式与我联系，谢谢理解！</b>
 </p>
