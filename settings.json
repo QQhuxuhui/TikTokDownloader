@@ -1,11 +1,11 @@
 {
     "accounts_urls": [
         {
-            "mark": "账号标识，可以设置为空字符串",
-            "url": "账号主页链接",
-            "tab": "账号主页类型",
-            "earliest": "作品最早发布日期",
-            "latest": "作品最晚发布日期"
+            "mark": "小鹿爱追剧",
+            "url": "https://v.douyin.com/iLCbskp6",
+            "tab": "post",
+            "earliest": "",
+            "latest": ""
         }
     ],
     "mix_urls": [
