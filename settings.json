@@ -1,60 +1,11 @@
 {
     "accounts_urls": [
         {
-            "mark": "一袭",
-            "url": "https://v.douyin.com/iLXMfo1q",
+            "mark": "易粉短剧",
+            "url": "https://v.douyin.com/iF8S2MDe/",
             "tab": "post",
-            "earliest": "2024/2/6",
-            "latest": "2024/2/17"
-        },
-        {
-            "mark": "小沐同学",
-            "url": "https://v.douyin.com/iLXMDxTE",
-            "tab": "post",
-            "earliest": "2024/2/6",
-            "latest": "2024/2/17"
-        },
-        {
-            "mark": "百香楼",
-            "url": "https://v.douyin.com/iLXrJ6oC",
-            "tab": "post",
-            "earliest": "2024/2/6",
-            "latest": "2024/2/17"
-        },
-        {
-            "mark": "——袖如风",
-            "url": "https://v.douyin.com/iLXMGeEL",
-            "tab": "post",
-            "earliest": "2024/2/6",
-            "latest": "2024/2/17"
-        },
-        {
-            "mark": "洛晴",
-            "url": "https://v.douyin.com/iLXMTwM3",
-            "tab": "post",
-            "earliest": "2024/2/6",
-            "latest": "2024/2/17"
-        },
-        {
-            "mark": "Momo7",
-            "url": "https://v.douyin.com/iNRQ4LjJ",
-            "tab": "post",
-            "earliest": "2020/1/23",
-            "latest": "2024/2/17"
-        },
-        {
-            "mark": "啵啵fu",
-            "url": "https://v.douyin.com/iNR7NJrQ",
-            "tab": "post",
-            "earliest": "2020/1/1",
-            "latest": "2024/2/17"
-        },
-        {
-            "mark": "拖拖🖤",
-            "url": "https://v.douyin.com/iNRKnuf3",
-            "tab": "post",
-            "earliest": "2020/1/1",
-            "latest": "2024/2/17"
+            "earliest": "2024/2/29",
+            "latest": "2024/2/29"
         }
     ],
     "mix_urls": [
