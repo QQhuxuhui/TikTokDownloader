@@ -226,7 +226,7 @@ class Link:
 
     # TikTok 链接
     works_link_tiktok = compile(
-        r"\S*?https://www\.tiktok\.com/@\S+?/video/(\d{19})\S*?")  # 作品链接
+        r"\S*?https://www\.tiktok\.com/@\S+?/(?:video|photo)/(\d{19})\S*?")  # 作品链接
 
     def __init__(self, params: Parameter):
         self.share = Share(params.logger, params.proxies, params.max_retry)
@@ -260,7 +260,7 @@ class Link:
             return False, u
         link = self.mix_link.findall(urls)
         share = self.mix_share.findall(urls)
-        return True, u if (u := link + share) else None, []
+        return (True, u) if (u := link + share) else (None, [])
 
     def live(self, text: str) -> tuple:
         urls = self.share.run(text)
@@ -1044,7 +1044,7 @@ class Collection(Acquirer):
             return False
         try:
             self.cursor = data['cursor']
-            self.deal_item_data(data["aweme_list"])
+            self.deal_item_data(data["aweme_list"] or [])
             self.finished = not data["has_more"]
             return True
         except KeyError:

@@ -40,13 +40,16 @@ from src.custom import TEXT_REPLACEMENT
 from src.custom import verify_token
 from src.encrypt import XBogus
 from src.manager import DownloadRecorder
+from src.module import Browser
 from src.module import ColorfulConsole
 from src.module import Cookie
+from src.module import CookieTikTok
 from src.module import Register
 from src.record import BaseLogger
 from src.record import LoggerManager
 from src.tools import FileSwitch
 from src.tools import choose
+from src.tools import safe_pop
 from .main_api_server import APIServer
 from .main_complete import TikTok
 from .main_server import Server
@@ -69,6 +72,9 @@ def start_cookie_task(function):
 
 
 class TikTokDownloader:
+    REDUCED = (1, 1, 1, 1, 0, 1, 0, 0, 1, 1)  # 禁用项目部分功能
+    # REDUCED = False  # 启用项目全部功能
+
     NAME = f"TikTokDownloader v{VERSION_MAJOR}.{
     VERSION_MINOR}{" Beta" if VERSION_BETA else ""}"
     WIDTH = 50
@@ -96,6 +102,7 @@ class TikTokDownloader:
         self.x_bogus = XBogus()
         self.settings = Settings(PROJECT_ROOT, self.console)
         self.cookie = Cookie(self.settings, self.console)
+        self.cookie_tiktok = CookieTikTok(self.settings, self.console)
         self.register = Register(
             self.settings,
             self.console,
@@ -103,6 +110,7 @@ class TikTokDownloader:
         )
         self.parameter = None
         self.running = True
+        self.default_mode = None
         self.event = Event()
         self.cookie_task = Thread(target=self.periodic_update_cookie)
         self.backup_task = None
@@ -120,8 +128,9 @@ class TikTokDownloader:
 
     def __update_menu(self):
         self.__function = (
-            ("复制粘贴写入 Cookie(推荐)", self.write_cookie),
-            ("扫码登录写入 Cookie(弃用)", self.auto_cookie),
+            ("复制粘贴写入 Cookie", self.write_cookie),
+            ("从浏览器获取 Cookie", self.browser_cookie),
+            ("扫码登录获取 Cookie", self.auto_cookie),
             ("终端交互模式", self.complete),
             ("后台监测模式", lambda: self.console.print("敬请期待！")),
             ("Web API 模式", self.__api_object),
@@ -129,7 +138,7 @@ class TikTokDownloader:
             ("服务器部署模式", self.__server_object),
             (f"{self.UPDATE['tip']}自动检查更新", self.__modify_update),
             (f"{self.RECORD['tip']}作品下载记录", self.__modify_recode),
-            ("删除作品下载记录", lambda: self.console.print("开发中！")),
+            ("删除指定下载记录", self.delete_works_ids),
             (f"{self.LOGGING['tip']}运行日志记录", self.__modify_logging),
         )
 
@@ -213,28 +222,28 @@ class TikTokDownloader:
             self.console.print("检测新版本失败", style=ERROR)
         self.console.print()
 
-    def main_menu(self, default_mode="0"):
+    def main_menu(self, default_mode=""):
         """选择运行模式"""
         while self.running:
             self.__update_menu()
-            if default_mode not in {"3", "4", "5", "6", "7"}:
+            if not default_mode:
                 default_mode = choose(
                     "请选择 TikTokDownloader 运行模式",
                     [i for i, _ in self.__function],
                     self.console,
                     separate=(
-                        1,
-                        6))
+                        2,
+                        7))
             self.compatible(default_mode)
-            default_mode = "0"
+            default_mode = None
 
     @start_cookie_task
     def complete(self):
         """终端交互模式"""
-        example = TikTok(self.parameter)
+        example = TikTok(self.parameter, self.REDUCED)
         register(self.blacklist.close)
         try:
-            example.run()
+            example.run(self.default_mode)
             self.running = example.running
         except KeyboardInterrupt:
             self.running = False
@@ -274,6 +283,9 @@ class TikTokDownloader:
         self.check_settings()
 
     def write_cookie(self):
+        self.console.print(
+            "Cookie 获取教程：https://github.com/JoeanAmier/TikTokDownloader/blob/master/docs/Cookie%E6%95"
+            "%99%E7%A8%8B.md")
         self.cookie.run()
         self.check_settings()
         self.parameter.update_cookie()
@@ -293,6 +305,13 @@ class TikTokDownloader:
             elif (n := int(mode) - 1) in range(len(self.__function)):
                 self.__function[n][1]()
 
+    def delete_works_ids(self):
+        if self.RECORD["tip"] == "启用":
+            self.console.print("作品下载记录功能已禁用！", style=WARNING)
+            return
+        self.blacklist.delete_ids(self.console.input("请输入需要删除的作品 ID："))
+        self.console.print("删除作品下载记录成功！", style=INFO)
+
     def check_settings(self):
         self.parameter = Parameter(
             self.settings,
@@ -303,7 +322,9 @@ class TikTokDownloader:
             console=self.console,
             **self.settings.read(),
             blacklist=self.blacklist,
+            reduced=bool(self.REDUCED),
         )
+        self.default_mode = self.parameter.default_mode.copy()
         self.parameter.cleaner.set_rule(TEXT_REPLACEMENT, True)
 
     def run(self):
@@ -312,7 +333,7 @@ class TikTokDownloader:
         self.check_update()
         self.check_settings()
         if self.disclaimer():
-            self.main_menu(self.parameter.default_mode)
+            self.main_menu(safe_pop(self.default_mode))
         self.close()
 
     @staticmethod
@@ -335,3 +356,6 @@ class TikTokDownloader:
         self.event.set()
         self.blacklist.close()
         self.parameter.logger.info("程序结束运行")
+
+    def browser_cookie(self):
+        Browser(self.parameter, self.cookie).run()

@@ -18,8 +18,8 @@
 <ol>
 <li><b>下载 EXE 程序</b> 或者 <b>配置运行环境</b>
 <ol><b>下载程序运行</b>
-<li>下载 <a href="https://github.com/JoeanAmier/TikTokDownloader/releases/latest">Releases</a> 发布的 EXE 程序压缩包</li>
-<li>解压后打开程序文件夹，双击运行 <code>main.exe</code></li>
+<li>下载 <a href="https://github.com/JoeanAmier/TikTokDownloader/releases/latest">Releases</a> 发布的 EXE 程序压缩包或安装包</li>
+<li>解压或安装后打开程序文件夹，双击运行 <code>main.exe</code></li>
 </ol>
 <ol><b>通过源码运行</b>
 <li>安装不低于 <code>3.12</code> 版本的 <a href="https://www.python.org/">Python</a> 解释器</li>
@@ -36,13 +36,16 @@
 <li>参考 <a href="https://github.com/JoeanAmier/TikTokDownloader/blob/master/docs/Cookie%E6%95%99%E7%A8%8B.md">Cookie 提取教程</a>，复制所需 Cookie 至剪贴板</li>
 <li>选择 <code>复制粘贴写入 Cookie</code> 选项，按照提示将 Cookie 写入配置文件</li>
 </ol>
-<ol><b>扫码登录获取(即将移除)</b>
-<li>选择 <code>扫码登陆写入 Cookie</code> 选项，程序会显示登录二维码图片，并使用默认应用打开图片</li>
+<ol><b>从浏览器获取(推荐)</b>
+<li>选择 <code>从浏览器获取 Cookie</code> 选项，按照提示选择浏览器类型</li>
+</ol>
+<ol><b>扫码登录获取(停用)</b>
+<li>选择 <code>扫码登录获取 Cookie</code> 选项，程序会显示登录二维码图片，并使用默认应用打开图片</li>
 <li>使用抖音 APP 扫描二维码并登录账号</li>
 <li>按照提示操作，将 Cookie 写入配置文件</li>
 </ol>
 </li>
-<li>返回程序界面，依次选择 <code>终端交互模式</code> -> <code>批量下载链接作品</code></li>
+<li>返回程序界面，依次选择 <code>终端交互模式</code> -> <code>批量下载链接作品(通用)</code> -> <code>手动输入待采集的作品链接</code></li>
 <li>输入抖音或 TikTok 作品链接即可下载作品文件</li>
 </ol>
 <h1>获取 Cookie</h1>
@@ -102,7 +105,7 @@
 <ul>
 <li>账号/作品/直播完整链接：使用浏览器打开抖音或 TikTok 链接时，地址栏所显示的 URL 地址。</li>
 <li>分享链接：点击 APP 或网页版的分享按钮得到的 URL 地址，抖音平台以 <code>https://v.</code> 开头，掺杂中文和其他字符；TikTok
-平台以 <code>https://vm</code> 开头，不掺杂其他字符；使用时不需要手动去除中文和其他字符，程序会自动提取 URL 链接。</li>
+平台以 <code>https://vm</code> 开头，不掺杂其他字符；使用时<b>不需要</b>手动去除中文和其他字符，程序会自动提取 URL 链接。</li>
 </ul>
 <h2>数据储存</h2>
 <ul>
@@ -110,9 +113,21 @@
 <li><code>采集作品评论数据</code>、<code>批量采集账号数据</code>、<code>采集搜索结果数据</code>、<code>采集抖音热榜数据</code> 模式必须设置 <code>storage_format</code> 参数才能正常使用。</li>
 <li>程序所有数据均储存至 <code>root</code> 参数路径下的 <code>Data</code> 文件夹。</li>
 </ul>
+<h2>文本文档</h2>
+<p>项目部分功能支持从文本文档（TXT）读取链接，如需使用，请在计算机任意路径创建一个空白文本文档，然后编辑文件内容，每行输入单个链接，编辑完成后保存文件。</p>
+<p>文本文档编码：UTF-8</p>
+<h3>文本文档内容示例</h3>
+
+```text
+https://www.douyin.com/user/abcd?vid=123456789
+https://www.douyin.com/search/key?modal_id=123456789
+https://www.douyin.com/video/123456789
+https://www.douyin.com/note/123456789
+```
+
 <h2>直播下载</h2>
 <p><code>获取直播推流地址</code> 功能支持调用 <code>ffmpeg</code> 下载直播，程序会优先调用系统环境的 <code>ffmpeg</code>，其次调用 <code>ffmpeg</code> 参数指定的 <code>ffmpeg</code>，如果 <code>ffmpeg</code> 不可用，程序将会调用内置下载器下载直播。</p>
-<p>建议配置 <code>ffmpeg</code> 环境，<code>ffmpeg.exe</code> 可前往 <a href="http://ffmpeg.org/download.html">官方网站</a> 获取。</p>
+<p>建议配置 <code>ffmpeg</code> 环境，<code>ffmpeg.exe</code> 可前往 <a href="https://ffmpeg.org/download.html">官方网站</a> 获取。</p>
 <h2>功能简介</h2>
 <table>
 <thead>
@@ -301,8 +316,8 @@
 </tr>
 <tr>
 <td align="center">default_mode</td>
-<td align="center">int</td>
-<td align="center">程序启动的默认模式</td>
+<td align="center">str</td>
+<td align="center">设置程序启动的默认模式，相当于模拟用户输入序号（多个序号使用空格分隔）</td>
 </tr>
 <tr>
 <td align="center">ffmpeg</td>
@@ -365,7 +380,7 @@
   "chunk": 10485760,
   "max_retry": 10,
   "max_pages": 2,
-  "default_mode": 3,
+  "default_mode": "4 2 1",
   "ffmpeg": "C:\\TikTokDownloader\\ffmpeg.exe"
 }
 ```
@@ -431,7 +446,7 @@
 }
 ```
 
-<p>代表程序会将下载的文件和记录的数据储存至 <code>C:\TikTokDownloader</code> 文件夹内，链接下载的作品文件会储存至 <code>C:\TikTokDownloader\SOLO</code> 文件夹内。</p>
+<p>程序会将下载的文件和记录的数据储存至 <code>C:\TikTokDownloader</code> 文件夹内，链接下载的作品文件会储存至 <code>C:\TikTokDownloader\SOLO</code> 文件夹内。</p>
 <h3>文件名称格式</h3>
 
 ```json
@@ -441,7 +456,7 @@
 }
 ```
 
-<p>代表作品文件名称格式为: <code>发布时间 @ 作者UID @ 作品ID</code></p>
+<p>作品文件名称格式为: <code>发布时间 @ 作者UID @ 作品ID</code></p>
 <ul>
 <li>如果作品没有描述，保存时文件名称的描述内容将替换为作品 ID</li>
 <li>批量下载链接作品时，如果在 <code>name_format</code> 参数中设置了 <code>mark</code> 字段，程序会自动替换为 <code>nickname</code> 字段</li>
@@ -454,7 +469,7 @@
 }
 ```
 
-<p>代表发布时间格式为：XXXX年-XX月-XX日，详细设置规则可以 <a href="https://docs.python.org/zh-cn/3/library/time.html?highlight=strftime#time.strftime">查看文档</a></p>
+<p>发布时间格式为：XXXX年-XX月-XX日，详细设置规则可以 <a href="https://docs.python.org/zh-cn/3/library/time.html?highlight=strftime#time.strftime">查看文档</a></p>
 <h3>数据储存格式</h3>
 
 ```json
@@ -463,7 +478,7 @@
 }
 ```
 
-<p>代表使用 <code>XLSX</code> 格式储存程序采集数据。</p>
+<p>使用 <code>XLSX</code> 格式储存程序采集数据。</p>
 <h3>文件大小限制</h3>
 
 ```json
@@ -472,7 +487,7 @@
 }
 ```
 
-<p>代表作品文件大小限制为 104857600 字节(100 MB)，超过该大小的作品文件会自动跳过下载；直播文件不受限制。</p>
+<p>作品文件大小限制为 104857600 字节(100 MB)，超过该大小的作品文件会自动跳过下载；直播文件不受限制。</p>
 <h3>文件分块下载</h3>
 
 ```json
@@ -481,7 +496,7 @@
 }
 ```
 
-<p>代表下载文件时每次从服务器接收 10485760 字节 (10 MB)的数据块。</p>
+<p>下载文件时每次从服务器接收 10485760 字节 (10 MB)的数据块。</p>
 <ul>
 <li>影响下载速度：较大的 chunk 会增加每次下载的数据量，从而提高下载速度。相反，较小的 chunk 会降低每次下载的数据量，可能导致下载速度稍慢。</li>
 <li>影响内存占用：较大的 chunk 会一次性加载更多的数据到内存中，可能导致内存占用增加。相反，较小的 chunk 会减少每次加载的数据量，从而降低内存占用。</li>
@@ -494,17 +509,18 @@
 }
 ```
 
-<p>代表批量下载账号喜欢作品、收藏作品或者采集作品评论数据时，仅获取前 <code>2</code> 页数据；用于解决批量下载账号喜欢作品、收藏作品需要获取全部数据的问题，以及作品评论数据数量过多的采集问题。</p>
+<p>批量下载账号喜欢作品、收藏作品或者采集作品评论数据时，仅获取前 <code>2</code> 页数据；用于解决批量下载账号喜欢作品、收藏作品需要获取全部数据的问题，以及作品评论数据数量过多的采集问题。</p>
 <p>不影响批量下载账号发布作品，如需控制账号发布作品数据获取次数，可使用 <code>earliest</code> 和 <code>latest</code> 参数实现。</p>
 <h3>默认启动模式</h3>
 
 ```json
 {
-  "default_mode": 3
+  "default_mode": "4 2 1"
 }
 ```
 
-<p>代表运行程序自动进入 <code>终端交互模式</code>，其他示例：<code>4</code> 代表 <code>Web API 接口模式</code>，<code>5</code> 代表 <code>Web UI 交互模式</code>，<code>6</code> 代表 <code>服务器部署模式</code>。</p>
+<p>运行程序自动依次进入 <code>终端交互模式</code> -> <code>批量下载账号作品(抖音)</code> -> <code>使用 accounts_urls 参数的账号链接(推荐)</code></p>
+<p>其他示例：<code>4 2</code> 代表依次进入 <code>终端交互模式</code> -> <code>批量下载账号作品(抖音)</code>；<code>6</code>代表进入<code>Web API 模式</code></p>
 <h3>程序代理设置</h3>
 
 ```json
@@ -513,7 +529,7 @@
 }
 ```
 
-<p>代表程序获取网络数据时使用 <code>http://127.0.0.1:9999</code> 作为代理；程序会自动验证代理是否可用，如果代理不可用，则 <code>proxies</code> 参数不生效。</p>
+<p>程序获取网络数据时使用 <code>http://127.0.0.1:9999</code> 作为代理；程序会自动验证代理是否可用，如果代理不可用，则 <code>proxies</code> 参数不生效。</p>
 <p>如果您的电脑使用了代理工具且未修改默认端口，可以尝试以下设置：</p>
 <ul>
 <li>Clash: <code>http://127.0.0.1:7890</code></li>
@@ -542,9 +558,12 @@
 <h2>复制粘贴写入 Cookie</h2>
 <p>参考 <a href="https://github.com/JoeanAmier/TikTokDownloader/blob/master/docs/Cookie%E6%95%99%E7%A8%8B.md">Cookie 提取教程</a>，手动从浏览器复制所需 Cookie 至剪贴板，按照程序提示输入 Cookie 后回车确认，程序会自动处理 Cookie 并写入配置文件。</p>
 <p><b>推荐使用该方法获取 Cookie</b>，如果粘贴 Cookie 至终端后无响应，可能是 Cookie 文本长度超出终端最大文本长度限制，请考虑更换终端或者其他写入方式。</p>
-<h2><del>扫码登录写入 Cookie</del></h2>
+<h2>从浏览器获取 Cookie</h2>
+<p>自动读取本地浏览器的 Cookie 数据，并提取所需 Cookie 写入配置文件，需要完全关闭对应浏览器才能读取 Cookie 数据。</p>
+<h2><del>扫码登录获取 Cookie</del></h2>
 <p><del>程序自动获取抖音登录二维码，随后会在终端输出二维码，并使用系统默认图片浏览器打开二维码图片，使用者通过抖音 APP 扫码并登录账号，操作后关闭二维码图片窗口，程序会自动检查登录结果并将登录后的 Cookie 写入配置文件。</del></p>
 <p><del><b>注意：</b>扫码登录获取的 Cookie 有效期更短，且频繁扫码登录容易导致账号被风控！</del></p>
+<p>当前已失效，未来可能修复或移除！</p>
 <h2>终端交互模式</h2>
 <p>功能最全面的模式，支持全部功能。</p>
 <h3>批量下载账号作品(TikTok)</h3>
@@ -592,6 +611,7 @@ document.body.removeChild(downloadLink);
 <ol>
 <li>使用 <code>settings.json</code> 的 <code>accounts_urls</code> 参数中的账号链接。</li>
 <li>手动输入待采集的账号链接；此选项仅支持批量下载账号发布页作品，暂不支持参数设置。</li>
+<li>输入文本文档路径，读取文件包含的账号链接；此选项仅支持批量下载账号发布页作品，暂不支持参数设置。</li>
 </ol>
 <p>支持链接格式：</p>
 <ul>
@@ -604,7 +624,11 @@ document.body.removeChild(downloadLink);
 <p>处理多个账号时，如果某个账号获取数据失败，程序会询问用户是否继续处理（可编辑 <code>src/custom/function.py</code> 文件修改功能）</p>
 <p>每个账号的作品会下载至 <code>root</code> 参数路径下的账号文件夹，账号文件夹格式为 <code>UID123456789_mark_类型</code> 或者 <code>UID123456789_账号昵称_类型</code></p>
 <h3>批量下载链接作品</h3>
-<p>输入作品链接；<strong>支持 TikTok 平台。</strong></p>
+<p><strong>支持 TikTok 平台。</strong></p>
+<ol>
+<li>手动输入待采集的作品链接。</li>
+<li>输入文本文档路径，读取文件包含的作品链接。</li>
+</ol>
 <p>支持链接格式：</p>
 <ul>
 <li><code>https://v.douyin.com/分享码/</code></li>
@@ -635,7 +659,10 @@ document.body.removeChild(downloadLink);
 <li>直播视频会下载至 <code>root</code> 参数路径下的 <code>Live</code> 文件夹</li>
 </ul>
 <h3>采集作品评论数据</h3>
-<p>输入作品链接。</p>
+<ol>
+<li>手动输入待采集的作品链接。</li>
+<li>输入文本文档路径，读取文件包含的作品链接。</li>
+</ol>
 <p>支持链接格式：</p>
 <ul>
 <li><code>https://v.douyin.com/分享码/</code></li>
@@ -651,6 +678,7 @@ document.body.removeChild(downloadLink);
 <ol>
 <li>使用 <code>settings.json</code> 的 <code>mix_urls</code> 参数中的合集链接或作品链接。</li>
 <li>输入合集链接，或者属于合集的任意一个作品链接。</li>
+<li>输入文本文档路径，读取文件包含的作品链接或合集链接；该选项暂不支持设置合集标识。</li>
 </ol>
 <p>支持链接格式：</p>
 <ul>
@@ -670,6 +698,7 @@ document.body.removeChild(downloadLink);
 <ol>
 <li>使用 <code>settings.json</code> 的 <code>accounts_urls</code> 参数中的账号链接。</li>
 <li>手动输入待采集的账号链接。</li>
+<li>输入文本文档路径，读取文件包含的账号链接。</li>
 </ol>
 <p>支持链接格式：</p>
 <ul>
@@ -1038,8 +1067,9 @@ print(response.json())
 <p>程序会周期性备份作品下载记录数据，当作品下载记录数据丢失时，程序会尝试通过备份文件恢复数据，备份周期可以通过 <code>src/custom/static.py</code> 文件设置。</p>
 <p>记录文件路径: <code>./cache/IDRecorder.txt</code></p>
 <p><strong>不建议在程序运行过程中访问记录文件！</strong></p>
-<h2>删除作品下载记录</h2>
-<p>输入作品 ID（多个作品 ID 之间使用空格分隔），删除作品下载记录中对应的数据，如果输入 <code>all</code>，代表清空作品下载记录数据！</p>
+<h2>删除指定下载记录</h2>
+<p>输入作品 ID 或者作品完整链接（多个作品之间使用空格分隔），删除作品下载记录中对应的数据，如果输入 <code>all</code>，代表清空作品下载记录数据！</p>
+<p>作品下载记录数据将在程序结束运行后保存至文件！</p>
 <h2>启用/禁用运行日志记录</h2>
 <p>是否将程序运行日志记录保存到文件，默认关闭，日志文件保存路径：<code>./Log</code></p>
 <p>如果在使用过程中发现程序 Bug，可以及时告知作者，并附上日志文件，日志记录有助于作者分析 Bug 原因和修复 Bug。</p>

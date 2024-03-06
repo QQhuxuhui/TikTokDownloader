@@ -47,6 +47,7 @@
 * ✅ 采集抖音热榜数据
 * ✅ 记录已下载作品 ID
 * ✅ 扫码登陆获取 Cookie
+* ✅ 从浏览器获取 Cookie
 * ✅ 支持 Web API 调用
 * ✅ 支持多线程下载作品
 * ✅ 文件完整性处理机制
@@ -78,7 +79,7 @@
 
 <p><b>🎥 点击图片观看演示视频，建议通过配置文件管理账号，更多介绍请查阅 <a href="https://github.com/JoeanAmier/TikTokDownloader/wiki/Documentation">文档</a></b></p>
 
-[![演示视频](docs/程序运行演示.png)](https://www.bilibili.com/video/BV1Nu4y1L7LW/)
+[![演示视频](docs/程序运行演示.png)](https://www.bilibili.com/video/BV1KH4y177Ev/)
 
 # 📈 项目状态\(Status\)
 
@@ -86,8 +87,7 @@
 * 🟡 TikTokDownloader 开发计划及进度可前往 [Projects](https://github.com/users/JoeanAmier/projects/2) 查阅
 * 🔴 请注意，最新源码可能存在一些不稳定的 Bug
 * 🔴 如果在使用过程中发现程序 Bug，请及时告知作者修复
-* 🔴 采集 TikTok 图集作品导致异常退出，已修复
-* 🔴 某些情况下读取 HTML 文件失败，已修复
+* 🔴 夜晚无法下载高分辨率视频，疑似抖音服务端限制
 
 # 📋 项目说明\(Instructions\)
 
@@ -96,8 +96,8 @@
 <ol>
 <li><b>下载 EXE 程序</b> 或者 <b>配置运行环境</b>
 <ol><b>下载程序运行</b>
-<li>下载 <a href="https://github.com/JoeanAmier/TikTokDownloader/releases/latest">Releases</a> 发布的 EXE 程序压缩包</li>
-<li>解压后打开程序文件夹，双击运行 <code>main.exe</code></li>
+<li>下载 <a href="https://github.com/JoeanAmier/TikTokDownloader/releases/latest">Releases</a> 发布的 EXE 程序压缩包或安装包</li>
+<li>解压或安装后打开程序文件夹，双击运行 <code>main.exe</code></li>
 </ol>
 <ol><b>通过源码运行</b>
 <li>安装不低于 <code>3.12</code> 版本的 <a href="https://www.python.org/">Python</a> 解释器</li>
@@ -114,13 +114,16 @@
 <li>参考 <a href="https://github.com/JoeanAmier/TikTokDownloader/blob/master/docs/Cookie%E6%95%99%E7%A8%8B.md">Cookie 提取教程</a>，复制所需 Cookie 至剪贴板</li>
 <li>选择 <code>复制粘贴写入 Cookie</code> 选项，按照提示将 Cookie 写入配置文件</li>
 </ol>
-<ol><b>扫码登录获取(即将移除)</b>
-<li>选择 <code>扫码登陆写入 Cookie</code> 选项，程序会显示登录二维码图片，并使用默认应用打开图片</li>
+<ol><b>从浏览器获取(推荐)</b>
+<li>选择 <code>从浏览器获取 Cookie</code> 选项，按照提示选择浏览器类型</li>
+</ol>
+<ol><b>扫码登录获取(停用)</b>
+<li>选择 <code>扫码登录获取 Cookie</code> 选项，程序会显示登录二维码图片，并使用默认应用打开图片</li>
 <li>使用抖音 APP 扫描二维码并登录账号</li>
 <li>按照提示操作，将 Cookie 写入配置文件</li>
 </ol>
 </li>
-<li>返回程序界面，依次选择 <code>终端交互模式</code> -> <code>批量下载链接作品</code></li>
+<li>返回程序界面，依次选择 <code>终端交互模式</code> -> <code>批量下载链接作品(通用)</code> -> <code>手动输入待采集的作品链接</code></li>
 <li>输入抖音或 TikTok 作品链接即可下载作品文件</li>
 <li>更多详细说明请查看 <b><a href="https://github.com/JoeanAmier/TikTokDownloader/wiki/Documentation">项目文档</a></b></li>
 </ol>
@@ -180,7 +183,7 @@
 >
 > ### 安装程序
 >
->> **敬请期待！**
+>> **直接使用安装程序覆盖安装。**
 
 # ⚠️ 免责声明\(Disclaimers\)
 
