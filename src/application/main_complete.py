@@ -27,8 +27,8 @@ from src.custom import suspend
 from src.downloader import Downloader
 from src.extract import Extractor
 from src.manager import Cache
+from src.module import TikTokAccount
 from src.storage import RecordManager
-from src.tools import TikTokAccount
 from src.tools import choose
 from src.tools import safe_pop
 
@@ -295,7 +295,7 @@ class TikTok:
             # break  # 调试代码
             count.success += 1
             if index != len(self.accounts):
-                suspend(index, self.console.print)
+                suspend(index, self.console)
         self.__summarize_results(count)
 
     def check_sec_user_id(self, sec_user_id: str) -> str:
@@ -334,7 +334,7 @@ class TikTok:
                 break
             count.success += 1
             if index != len(links):
-                suspend(index, self.console.print)
+                suspend(index, self.console)
         self.__summarize_results(count)
 
     def deal_account_works(
@@ -485,6 +485,7 @@ class TikTok:
             if not any(ids):
                 self.logger.warning(f"{url} 提取作品 ID 失败")
                 continue
+            self.console.print(f"共提取到 {len(ids)} 个作品，开始处理！")
             self.input_links_acquisition(tiktok, ids, record)
 
     def __works_txt(self, record):
@@ -494,6 +495,7 @@ class TikTok:
         if not any(ids):
             self.logger.warning("从文本文档提取作品 ID 失败")
             return
+        self.console.print(f"共提取到 {len(ids)} 个作品，开始处理！")
         self.input_links_acquisition(tiktok, ids, record)
 
     def input_links_acquisition(
@@ -620,6 +622,7 @@ class TikTok:
             elif tiktok:
                 self.console.print("目前项目暂不支持采集 TikTok 作品评论数据！", style=WARNING)
                 continue
+            self.console.print(f"共提取到 {len(ids)} 个作品，开始处理！")
             self.__comment_handle(ids, root, params, logger)
 
     def __comment_txt(self, root, params, logger):
@@ -632,6 +635,7 @@ class TikTok:
         elif tiktok:
             self.console.print("目前项目暂不支持采集 TikTok 作品评论数据！", style=WARNING)
             return
+        self.console.print(f"共提取到 {len(ids)} 个作品，开始处理！")
         self.__comment_handle(ids, root, params, logger)
 
     def __comment_handle(self, ids: list, root, params, logger):
@@ -686,7 +690,7 @@ class TikTok:
                 break
             count.success += 1
             if index != len(ids):
-                suspend(index, self.console.print)
+                suspend(index, self.console)
         self.__summarize_results(count, "合集")
 
     def mix_batch(self, root, params, logger):
@@ -713,7 +717,7 @@ class TikTok:
                 break
             count.success += 1
             if index != len(self.mix):
-                suspend(index, self.console.print)
+                suspend(index, self.console)
         self.__summarize_results(count, "合集")
 
     def _deal_mix_works(self,

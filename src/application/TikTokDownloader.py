@@ -33,6 +33,7 @@ from src.custom import (
     LICENCE,
     DOCUMENTATION_URL,
     DISCLAIMER_TEXT,
+    PROJECT_NAME,
 )
 from src.custom import SERVER_HOST
 from src.custom import SERVER_PORT
@@ -40,13 +41,12 @@ from src.custom import TEXT_REPLACEMENT
 from src.custom import verify_token
 from src.encrypt import XBogus
 from src.manager import DownloadRecorder
-from src.module import Browser
-from src.module import ColorfulConsole
 from src.module import Cookie
-from src.module import CookieTikTok
 from src.module import Register
 from src.record import BaseLogger
 from src.record import LoggerManager
+from src.tools import Browser
+from src.tools import ColorfulConsole
 from src.tools import FileSwitch
 from src.tools import choose
 from src.tools import safe_pop
@@ -75,8 +75,12 @@ class TikTokDownloader:
     REDUCED = (1, 1, 1, 1, 0, 1, 0, 0, 1, 1)  # 禁用项目部分功能
     # REDUCED = False  # 启用项目全部功能
 
-    NAME = f"TikTokDownloader v{VERSION_MAJOR}.{
-    VERSION_MINOR}{" Beta" if VERSION_BETA else ""}"
+    PLATFORM = {
+        "1": "cookie",
+        "2": "cookie_tiktok",
+    }
+
+    NAME = PROJECT_NAME
     WIDTH = 50
     LINE = ">" * WIDTH
 
@@ -95,19 +99,18 @@ class TikTokDownloader:
     DISCLAIMER = {"path": PROJECT_ROOT.joinpath(
         "./src/config/Consent_Disclaimer")}
 
-    def __init__(self):
+    FUNCTION_OPTIONS = {
+        True: "禁用",
+        False: "启用",
+    }
+
+    def __init__(self, **kwargs):
         self.console = ColorfulConsole()
         self.logger = None
         self.blacklist = None
         self.x_bogus = XBogus()
         self.settings = Settings(PROJECT_ROOT, self.console)
         self.cookie = Cookie(self.settings, self.console)
-        self.cookie_tiktok = CookieTikTok(self.settings, self.console)
-        self.register = Register(
-            self.settings,
-            self.console,
-            self.x_bogus,
-        )
         self.parameter = None
         self.running = True
         self.default_mode = None
@@ -184,11 +187,11 @@ class TikTokDownloader:
         self.abnormal = PROJECT_ROOT.joinpath(folder[-1]).exists()
         for i in folder:
             PROJECT_ROOT.joinpath(i).mkdir(exist_ok=True)
-        self.UPDATE["tip"] = "启用" if self.UPDATE["path"].exists() else "禁用"
-        self.RECORD["tip"] = "启用" if (
-            b := self.RECORD["path"].exists()) else "禁用"
-        self.LOGGING["tip"] = "禁用" if (
-            l := self.LOGGING["path"].exists()) else "启用"
+        self.UPDATE["tip"] = self.FUNCTION_OPTIONS[not self.UPDATE["path"].exists()]
+        self.RECORD["tip"] = self.FUNCTION_OPTIONS[not (
+            b := self.RECORD["path"].exists())]
+        self.LOGGING["tip"] = self.FUNCTION_OPTIONS[(
+            l := self.LOGGING["path"].exists())]
         self.blacklist = DownloadRecorder(
             not b,
             PROJECT_ROOT.joinpath("./cache"),
@@ -284,15 +287,24 @@ class TikTokDownloader:
 
     def write_cookie(self):
         self.console.print(
-            "Cookie 获取教程：https://github.com/JoeanAmier/TikTokDownloader/blob/master/docs/Cookie%E6%95"
-            "%99%E7%A8%8B.md")
-        self.cookie.run()
-        self.check_settings()
-        self.parameter.update_cookie()
+            "Cookie 获取教程：https://github.com/JoeanAmier/TikTokDownloader/blob/master/docs/Cookie%E8%8E%B7%E5%8F%96%E6"
+            "%95%99%E7%A8%8B.md")
+        if (p := self.__select_platform()) in self.PLATFORM:
+            self.cookie.run(self.PLATFORM[p])
+            self.check_settings()
+            self.parameter.update_cookie()
 
     def auto_cookie(self):
-        if cookie := self.register.run(self.parameter.temp):
-            self.cookie.extract(cookie, False)
+        self.console.print(
+            "警告：该功能可能会导致抖音账号被风控，建议使用其他方式获取 Cookie！",
+            style=ERROR)
+        self.console.print("该功能仅支持抖音平台，未来可能会禁用该功能！", style=WARNING)
+        if cookie := Register(
+                self.settings,
+                self.console,
+                self.x_bogus,
+        ).run(self.parameter.temp):
+            self.cookie.extract(cookie)
             self.check_settings()
             self.parameter.update_cookie()
         else:
@@ -336,9 +348,8 @@ class TikTokDownloader:
             self.main_menu(safe_pop(self.default_mode))
         self.close()
 
-    @staticmethod
-    def delete_temp():
-        rmtree(PROJECT_ROOT.joinpath("./cache/temp").resolve())
+    def delete_temp(self):
+        rmtree(self.parameter.temp.resolve())
 
     def periodic_update_cookie(self):
         while not self.event.is_set():
@@ -358,4 +369,15 @@ class TikTokDownloader:
         self.parameter.logger.info("程序结束运行")
 
     def browser_cookie(self):
-        Browser(self.parameter, self.cookie).run()
+        if (p := self.__select_platform()) in self.PLATFORM:
+            Browser(self.parameter, self.cookie).run(p == "2")
+
+    def __select_platform(self) -> str:
+        return choose(
+            "请选择平台：",
+            (
+                "抖音平台",
+                "TikTok 平台",
+            ),
+            self.console,
+        )

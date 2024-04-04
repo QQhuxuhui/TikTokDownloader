@@ -42,7 +42,8 @@ class Extractor:
             return {}
 
     @staticmethod
-    def generate_data_object(data: dict) -> SimpleNamespace:
+    def generate_data_object(
+            data: dict) -> SimpleNamespace | list[SimpleNamespace]:
         def depth_conversion(element):
             if isinstance(element, dict):
                 return SimpleNamespace(
@@ -251,16 +252,14 @@ class Extractor:
 
     @staticmethod
     def time_conversion(time_: int) -> str:
+        second = time_ // 1000
         return f"{
-        time_ //
-        1000 //
+        second //
         3600:0>2d}:{
-        time_ //
-        1000 %
+        second %
         3600 //
         60:0>2d}:{
-        time_ //
-        1000 %
+        second %
         3600 %
         60:0>2d}"
 

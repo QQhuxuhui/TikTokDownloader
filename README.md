@@ -13,7 +13,6 @@
 <br>
 <p>🔥 <b>TikTok 主页/视频/图集/原声；抖音主页/视频/图集/收藏/直播/原声/合集/评论/账号/搜索/热榜数据采集工具：</b>完全开源，基于 Requests 模块实现的免费工具；批量下载抖音账号发布、喜欢、收藏作品；批量下载 TikTok 账号主页作品；下载抖音链接或 TikTok 链接作品；获取抖音直播推流地址；下载抖音直播视频；采集抖音作品评论数据；批量下载抖音合集作品；采集抖音账号详细数据；采集抖音用户 / 作品 / 直播搜索结果；采集抖音热榜数据。</p>
 <p>⭐ Windows 10 及以上用户可前往 <a href="https://github.com/JoeanAmier/TikTokDownloader/releases/latest">Releases</a> 下载已编译的 exe 程序，开箱即用！</p>
-<p>❤️ 作者仅在 GitHub 发布 TikTokDownloader，未与任何个人或网站合作发布，项目没有任何收费计划，谨防上当受骗！</p>
 <hr>
 
 # 📝 项目功能\(Function\)
@@ -87,7 +86,9 @@
 * 🟡 TikTokDownloader 开发计划及进度可前往 [Projects](https://github.com/users/JoeanAmier/projects/2) 查阅
 * 🔴 请注意，最新源码可能存在一些不稳定的 Bug
 * 🔴 如果在使用过程中发现程序 Bug，请及时告知作者修复
+* 🔴 某些情况下会下载到错误的 TikTok 作品，未修复
 * 🔴 夜晚无法下载高分辨率视频，疑似抖音服务端限制
+* 🔴 TikTok 平台作品下载功能失效，已修复
 
 # 📋 项目说明\(Instructions\)
 
@@ -110,14 +111,14 @@
 </li>
 <li>阅读 TikTokDownloader 的免责声明，根据提示输入内容</li>
 <li>将 Cookie 信息写入配置文件
-<ol><b>手动复制粘贴(推荐)</b>
-<li>参考 <a href="https://github.com/JoeanAmier/TikTokDownloader/blob/master/docs/Cookie%E6%95%99%E7%A8%8B.md">Cookie 提取教程</a>，复制所需 Cookie 至剪贴板</li>
+<ol><b>手动复制粘贴 Cookie（推荐）</b>
+<li>参考 <a href="https://github.com/JoeanAmier/TikTokDownloader/blob/master/docs/Cookie%E8%8E%B7%E5%8F%96%E6%95%99%E7%A8%8B.md">Cookie 提取教程</a>，复制所需 Cookie 至剪贴板</li>
 <li>选择 <code>复制粘贴写入 Cookie</code> 选项，按照提示将 Cookie 写入配置文件</li>
 </ol>
-<ol><b>从浏览器获取(推荐)</b>
+<ol><b>从浏览器获取 Cookie（推荐）</b>
 <li>选择 <code>从浏览器获取 Cookie</code> 选项，按照提示选择浏览器类型</li>
 </ol>
-<ol><b>扫码登录获取(停用)</b>
+<ol><b>扫码登录获取 Cookie（不推荐）</b>
 <li>选择 <code>扫码登录获取 Cookie</code> 选项，程序会显示登录二维码图片，并使用默认应用打开图片</li>
 <li>使用抖音 APP 扫描二维码并登录账号</li>
 <li>按照提示操作，将 Cookie 写入配置文件</li>
@@ -132,7 +133,7 @@
 
 ## 关于 Cookie
 
-[点击查看 Cookie 获取教程](https://github.com/JoeanAmier/TikTokDownloader/blob/master/docs/Cookie%E6%95%99%E7%A8%8B.md)
+[点击查看 Cookie 获取教程](https://github.com/JoeanAmier/TikTokDownloader/blob/master/docs/Cookie%E8%8E%B7%E5%8F%96%E6%95%99%E7%A8%8B.md)
 
 |   程序功能   | 是否需要登录 |
 |:--------:|:------:|
@@ -205,17 +206,15 @@
 # ✉️ 联系作者\(Contact\)
 
 <ul>
-<li>QQ: 2437596031（联系请说明来意）</li>
-<li>QQ Group: <a href="https://github.com/JoeanAmier/TikTokDownloader/blob/master/docs/QQ%E7%BE%A4%E8%81%8A%E4%BA%8C%E7%BB%B4%E7%A0%81.png">点击扫码加入群聊</a></li>
-<li>Email: yonglelolu@gmail.com</li>
+<li>微信: Downloader_Tools</li>
+<li>微信公众号: Downloader Tools</li>
+<li>QQ 群聊(使用交流): <a href="https://github.com/JoeanAmier/TikTokDownloader/blob/master/docs/QQ%E7%BE%A4%E8%81%8A%E4%BA%8C%E7%BB%B4%E7%A0%81.png">扫码加入群聊</a></li>
 </ul>
-<p>
-<b>如果您在使用 TikTokDownloader 的时候遇到问题，请先阅读<a href="https://github.com/ryanhanwu/How-To-Ask-Questions-The-Smart-Way/blob/main/README-zh_CN.md">《提问的智慧》</a>，然后加入 QQ 群聊寻求帮助！</b>
-</p>
-<p>
-<b>如果您通过 Email 联系我，我可能无法及时查看并回复信息，我会尽力在七天内回复您的邮件；如果有紧急事项或需要更快的回复，请通过其他方式与我联系，谢谢理解！</b>
-</p>
-<p><b>如果您对小红书感兴趣，可以了解一下我的另一个开源项目 <a href="https://github.com/JoeanAmier/XHS-Downloader">XHS-Downloader</a></b></p>
+<p>✨ <b>作者的其他开源项目：</b></p>
+<ul>
+<li><b>XHS-Downloader（小红书）</b>：<a href="https://github.com/JoeanAmier/XHS-Downloader">https://github.com/JoeanAmier/XHS-Downloader</a></li>
+<li><b>KS-Downloader（快手）</b>：<a href="https://github.com/JoeanAmier/KS-Downloader">https://github.com/JoeanAmier/KS-Downloader</a></li>
+</ul>
 
 # ♥️ 支持项目\(Support\)
 
@@ -235,16 +234,16 @@
 </table>
 <p>如果您愿意，可以考虑提供资助为 <b>TikTokDownloader</b> 提供额外的支持！</p>
 
-# 💡 代码参考\(Refer\)
+# 💡 项目参考\(Refer\)
 
 * https://github.com/Johnserf-Seed/f2
 * https://github.com/Johnserf-Seed/TikTokDownload
 * https://github.com/Evil0ctal/Douyin_TikTok_Download_API
 * https://github.com/ihmily/DouyinLiveRecorder
-* https://github.com/davidteather/TikTok-Api
-* https://github.com/psf/requests
-* https://github.com/pallets/flask
+* https://docs.aiohttp.org/en/stable/
 * https://github.com/Textualize/rich
+* https://github.com/omnilib/aiosqlite
+* https://github.com/borisbabic/browser_cookie3
 * https://github.com/pyinstaller/pyinstaller
 * https://ffmpeg.org/ffmpeg-all.html
 * https://html5up.net/hyperspace

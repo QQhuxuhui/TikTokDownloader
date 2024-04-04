@@ -4,6 +4,7 @@ from pathlib import Path
 from shutil import move
 from time import time
 from types import SimpleNamespace
+from typing import TYPE_CHECKING
 
 from requests import exceptions
 from requests import get
@@ -18,7 +19,6 @@ from rich.progress import (
     TransferSpeedColumn,
 )
 
-from src.config import Parameter
 from src.custom import DESCRIPTION_LENGTH
 from src.custom import MAX_WORKERS
 from src.custom import (
@@ -26,8 +26,10 @@ from src.custom import (
     INFO,
     WARNING,
 )
-from src.extend import VideoDownloader
-from src.tools import retry
+from src.tools import PrivateRetry
+
+if TYPE_CHECKING:
+    from src.config import Parameter
 
 __all__ = ["Downloader"]
 
@@ -37,10 +39,11 @@ class Downloader:
         'User-Agent': 'com.ss.android.ugc.trill/494+Mozilla/5.0+(Linux;+Android+12;+2112123G+Build/SKQ1.211006.001;+wv)'
                       '+AppleWebKit/537.36+(KHTML,+like+Gecko)+Version/4.0+Chrome/107.0.5304.105+Mobile+Safari/537.36'}
 
-    def __init__(self, params: Parameter):
+    def __init__(self, params: "Parameter"):
         self.cleaner = params.cleaner
         self.cookie = params.cookie
         self.PC_headers, self.black_headers = self.init_headers(params.headers)
+        self.PC_headers_tiktok = params.headers_tiktok
         self.log = params.logger
         self.xb = params.xb
         self.console = params.console
@@ -53,6 +56,7 @@ class Downloader:
         self.dynamic = params.dynamic_cover
         self.original = params.original_cover
         self.proxies = params.proxies
+        self.proxies_tiktok = params.proxies_tiktok
         self.download = params.download
         self.max_size = params.max_size
         self.chunk = params.chunk
@@ -327,7 +331,7 @@ class Downloader:
             count.skipped_video.add(id_)
             return
         tasks.append((
-            VideoDownloader.deal(item),
+            item["downloads"],
             temp_root.with_name(f"{name}.mp4"),
             p,
             f"视频 {id_}",
@@ -389,7 +393,7 @@ class Downloader:
     def check_deal_music(self, url: str, path: Path) -> bool:
         return all((self.music, url, not self.is_exists(path)))
 
-    @retry
+    @PrivateRetry.retry
     def request_file(
             self,
             url: str,
@@ -407,7 +411,7 @@ class Downloader:
                     url,
                     stream=True,
                     proxies=self.proxies,
-                    headers=self.__adapter_headers(show, headers, tiktok),
+                    headers=self.__adapter_headers(headers, tiktok),
                     timeout=self.timeout) as response:
                 if not (
                         content := int(
@@ -470,16 +474,10 @@ class Downloader:
 
     def __adapter_headers(
             self,
-            type_: str,
             headers: dict,
             tiktok: bool) -> dict:
         return headers or (
-            self.Phone_headers if tiktok else self.PC_headers if self.__video_extend_headers(
-                type_.startswith("视频")) else self.black_headers)
-
-    @staticmethod
-    def __video_extend_headers(video: bool) -> bool:
-        return VideoDownloader.COOKIE if video else True
+            self.Phone_headers if tiktok else self.black_headers)
 
     @staticmethod
     def add_count(type_: str, id_: str, count: SimpleNamespace):
