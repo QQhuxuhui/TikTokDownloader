@@ -9,8 +9,8 @@ __all__ = ['APIServer']
 
 
 class APIServer(WebUI):
-    def __init__(self, parameter, key=None):
-        super().__init__(parameter, key)
+    def __init__(self, parameter):
+        super().__init__(parameter)
 
     def _generate_record_params(self, data: dict, merge=True, **kwargs):
         root, params, logger = self.record.run(self.parameter,
@@ -51,7 +51,7 @@ class APIServer(WebUI):
             }
             self._generate_record_params(params)
             return {
-                "data": (d := self.deal_account_works(**params)),
+                "data": (d := self.deal_account_detail(**params)),
                 "message": "success" if d else "failure",
             }
 
@@ -150,7 +150,7 @@ class APIServer(WebUI):
             }
             self._generate_record_params(params, type_="mix")
             return {
-                "data": (d := self._deal_mix_works(**params)),
+                "data": (d := self._deal_mix_detail(**params)),
                 "message": "success" if d else "failure",
             }
 

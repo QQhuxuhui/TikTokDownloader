@@ -5,25 +5,35 @@ from types import SimpleNamespace
 from typing import TYPE_CHECKING
 from typing import Type
 
-from requests import exceptions
-from requests import get
+from aiohttp import ClientError
+from aiohttp.client_exceptions import ClientConnectorError
 
 from src.custom import BLANK_PREVIEW
-from src.custom import USERAGENT
+from src.custom import (
+    DATA_HEADERS,
+    DOWNLOAD_HEADERS,
+    PROJECT_ROOT,
+    DOWNLOAD_HEADERS_TIKTOK,
+    INFO,
+)
 from src.encrypt import MsToken
+from src.encrypt import MsTokenTikTok
 from src.encrypt import TtWid
+from src.encrypt import TtWidTikTok
 from src.extract import Extractor
 from src.module import FFMPEG
 from src.record import BaseLogger
 from src.record import LoggerManager
 from src.storage import RecordManager
 from src.tools import Cleaner
+from src.tools import base_session
 from src.tools import cookie_dict_to_str
 
 if TYPE_CHECKING:
     from src.manager import DownloadRecorder
     from src.tools import ColorfulConsole
     from .settings import Settings
+    from src.encrypt import XBogus
     from src.module import Cookie
 
 __all__ = ["Parameter"]
@@ -39,7 +49,7 @@ class Parameter:
         "mark",
         "type",
     )
-    mode_complete_values = {
+    mode_values = {
         "1",
         "2",
         "3",
@@ -72,40 +82,14 @@ class Parameter:
         "7",
         "8",
     }
-    mode_reduced_values = {
-        "1",
-        "2",
-        "3",
-        "4",
-        "4 1",
-        "4 2",
-        "4 2 1",
-        "4 2 2",
-        "4 2 3",
-        "4 3",
-        "4 3 1",
-        "4 3 2",
-        "4 4",
-        "4 5",
-        "4 5 1",
-        "4 5 2",
-        "4 5 3",
-        "4 6",
-        "4 7",
-        "5",
-        "6",
-        "7",
-        "8",
-    }
     cleaner = Cleaner()
 
     def __init__(
             self,
             settings: "Settings",
             cookie_object: "Cookie",
-            main_path: Path,
             logger: Type[BaseLogger | LoggerManager],
-            xb,
+            xb: "XBogus",
             console: "ColorfulConsole",
             cookie: dict | str,
             cookie_tiktok: dict | str,
@@ -123,8 +107,9 @@ class Parameter:
             storage_format: str,
             dynamic_cover: bool,
             original_cover: bool,
-            proxies: str,
-            proxies_tiktok: str,
+            proxy: str | None,
+            proxy_tiktok: str | None,
+            proxy_tiktok_region: str,
             download: bool,
             max_size: int,
             chunk: int,
@@ -134,23 +119,22 @@ class Parameter:
             owner_url: dict,
             owner_url_tiktok: dict,
             ffmpeg: str,
-            blacklist: "DownloadRecorder",
-            reduced: bool,
+            recorder: "DownloadRecorder",
             timeout=10,
+            update_cookie=True,
+            update_cookie_tiktok=True,
             **kwargs,
     ):
         self.settings = settings
         self.cookie_object = cookie_object
-        self.main_path = main_path  # 项目根路径
-        self.cache = main_path.joinpath("cache")  # 缓存路径
+        self.ROOT = PROJECT_ROOT  # 项目根路径
+        self.cache = PROJECT_ROOT.joinpath("cache")  # 缓存路径
         self.temp = self.cache.joinpath("temp")  # 临时文件路径
-        self.headers = {
-            "User-Agent": USERAGENT,
-        }
-        self.headers_tiktok = {
-            "User-Agent": USERAGENT,
-        }
-        self.logger = logger(main_path, console)
+        self.headers = DATA_HEADERS
+        self.headers_tiktok = DATA_HEADERS
+        self.headers_download = DOWNLOAD_HEADERS
+        self.headers_download_tiktok = DOWNLOAD_HEADERS_TIKTOK
+        self.logger = logger(PROJECT_ROOT, console)
         self.logger.run()
         self.xb = xb
         self.console = console
@@ -168,14 +152,15 @@ class Parameter:
         self.dynamic_cover = self.__check_bool(dynamic_cover)
         self.original_cover = self.__check_bool(original_cover)
         self.timeout = self.__check_timeout(timeout)
-        self.proxies = self.__check_proxies(proxies)
-        self.proxies_tiktok = self.__check_proxies_tiktok(proxies_tiktok)
+        self.proxy = proxy
+        self.proxy_tiktok = proxy_tiktok
+        self.proxy_tiktok_region = proxy_tiktok_region
         self.download = self.__check_bool(download)
         self.max_size = self.__check_max_size(max_size)
         self.chunk = self.__check_chunk(chunk)
         self.max_retry = self.__check_max_retry(max_retry)
         self.max_pages = self.__check_max_pages(max_pages)
-        self.blacklist = blacklist
+        self.recorder = recorder
         self.accounts_urls: list[SimpleNamespace] = Extractor.generate_data_object(
             accounts_urls)
         self.accounts_urls_tiktok: list[SimpleNamespace] = Extractor.generate_data_object(
@@ -186,17 +171,19 @@ class Parameter:
             mix_urls_tiktok)
         self.owner_url: SimpleNamespace = Extractor.generate_data_object(
             owner_url)
-        self.__reduced = reduced
+        self.owner_url_tiktok: SimpleNamespace = Extractor.generate_data_object(
+            owner_url_tiktok)
         self.default_mode = self.__check_default_mode(default_mode)
         self.preview = BLANK_PREVIEW
         self.ffmpeg = self.__generate_ffmpeg_object(ffmpeg)
+        self.session = base_session(timeout=self.timeout)
         self.check_rules = {
-            "accounts_urls": None,
-            "mix_urls": None,
-            "owner_url": None,
-            "accounts_urls_tiktok": None,
-            "mix_urls_tiktok": None,
-            "owner_url_tiktok": None,
+            "accounts_urls": self.__check_accounts_urls,
+            "mix_urls": self.__check_mix_urls,
+            "owner_url": self.__check_owner_url,
+            "accounts_urls_tiktok": self.__check_accounts_urls,
+            "mix_urls_tiktok": self.__check_mix_urls,
+            "owner_url_tiktok": self.__check_owner_url,
             "root": self.__check_root,
             "folder_name": self.__check_folder_name,
             "name_format": self.__check_name_format,
@@ -207,8 +194,8 @@ class Parameter:
             "storage_format": self.__check_storage_format,
             "dynamic_cover": self.__check_bool,
             "original_cover": self.__check_bool,
-            "proxies": self.__check_proxies,
-            "proxies_tiktok": self.__check_proxies_tiktok,
+            "proxy": self.__check_proxy,
+            "proxy_tiktok": self.__check_proxy_tiktok,
             "download": self.__check_bool,
             "max_size": self.__check_max_size,
             "chunk": self.__check_chunk,
@@ -217,12 +204,20 @@ class Parameter:
             "default_mode": self.__check_default_mode,
             "ffmpeg": self.__generate_ffmpeg_object,
         }
+        self.update_cookie_dy = self.__check_bool(update_cookie, True)
+        self.update_cookie_tk = self.__check_bool(update_cookie_tiktok, True)
+        self.__generate_folders()
+        # self.__update_download_headers()
 
     @staticmethod
     def __check_bool(value: bool, default=False) -> bool:
         return value if isinstance(value, bool) else default
 
     def __check_cookie_tiktok(self, cookie: dict | str, ) -> [dict, str]:
+        # if isinstance(cookie, str):
+        #     self.console.print(
+        #         "参数 cookie_tiktok 应为字典格式！请修改配置文件后重新运行程序！",
+        #         style=ERROR)
         return self.__check_cookie(cookie, name="cookie_tiktok")
 
     def __check_cookie(self, cookie: dict | str, name="cookie") -> [dict, str]:
@@ -234,24 +229,32 @@ class Parameter:
             self.logger.warning(f"{name} 参数格式错误")
         return {}, ""
 
-    def __get_cookie(self, cookie: dict | str, ):
+    def __get_cookie(self, cookie: dict, ) -> dict:
         return self.__check_cookie(cookie)[0]
 
-    def __get_cookie_cache(self, cookie: dict | str, ):
+    def __get_cookie_cache(self, cookie: str, ) -> str:
         return self.__check_cookie(cookie)[1]
 
-    def __get_cookie_tiktok(self, cookie: dict | str, ):
+    def __get_cookie_tiktok(self, cookie: dict, ) -> dict:
         return self.__check_cookie_tiktok(cookie)[0]
 
-    def __get_cookie_tiktok_cache(self, cookie: dict | str, ):
+    def __get_cookie_tiktok_cache(self, cookie: str, ) -> str:
         return self.__check_cookie_tiktok(cookie)[1]
 
-    @staticmethod
-    def __add_cookie(cookie: dict | str, tiktok=False) -> None | str:
+    async def __add_cookie(
+            self,
+            cookie: dict | str,
+            tiktok=False) -> None | str:
         if tiktok:
-            parameters = ()
+            parameters = (
+                await MsTokenTikTok.get_real_ms_token(
+                    self.logger, self.proxy_tiktok, ), await TtWidTikTok.get_tt_wid(
+                    self.logger, self.proxy_tiktok, ),)
         else:
-            parameters = (MsToken.get_real_ms_token(), TtWid.get_tt_wid(),)
+            parameters = (
+                await MsToken.get_real_ms_token(
+                    self.logger, self.proxy, ), await TtWid.get_tt_wid(
+                    self.logger, self.proxy, ),)
         if isinstance(cookie, dict):
             for i in parameters:
                 if isinstance(i, dict):
@@ -264,7 +267,7 @@ class Parameter:
 
     def __check_root(self, root: str) -> Path:
         if not root:
-            return self.main_path
+            return self.ROOT
         if (r := Path(root)).is_dir():
             self.logger.info(f"root 参数已设置为 {root}", False)
             return r
@@ -272,7 +275,7 @@ class Parameter:
             self.logger.info(f"root 参数已设置为 {r}", False)
             return r
         self.logger.warning(f"root 参数 {root} 不是有效的文件夹路径，程序将使用项目根路径作为储存路径")
-        return self.main_path
+        return self.ROOT
 
     @staticmethod
     def __check_root_again(root: Path) -> bool | Path:
@@ -317,41 +320,30 @@ class Parameter:
         self.logger.info(f"split 参数已设置为 {split}", False)
         return split
 
-    def __check_proxies_tiktok(self, proxies: str) -> dict:
-        return self.__check_proxies(proxies, "https://www.google.com/")
+    async def check_proxy(self) -> None:
+        self.proxy = await self.__check_proxy(self.proxy)
+        self.proxy_tiktok = await self.__check_proxy_tiktok(self.proxy_tiktok)
 
-    def __check_proxies(
+    async def __check_proxy_tiktok(self, proxy: str) -> str | None:
+        return await self.__check_proxy(proxy, "https://www.google.com/")
+
+    async def __check_proxy(
             self,
-            proxies: str,
-            url="https://www.baidu.com/") -> dict:
-        if isinstance(proxies, str) and proxies:
-            proxies_dict = {
-                "http": proxies,
-                "https": proxies,
-                "ftp": proxies,
-            }
+            proxy: str,
+            url="https://www.baidu.com/") -> str | None:
+        if isinstance(proxy, str) and proxy:
             try:
-                response = get(
-                    url,
-                    proxies=proxies_dict,
-                    timeout=self.timeout)
-                if response.status_code == 200:
-                    self.logger.info(f"代理 {proxies} 测试成功")
-                    return proxies_dict
-            except exceptions.ReadTimeout:
-                self.logger.warning(f"代理 {proxies} 测试超时")
-            except (
-                    exceptions.ProxyError,
-                    exceptions.SSLError,
-                    exceptions.ChunkedEncodingError,
-                    exceptions.ConnectionError,
-            ):
-                self.logger.warning(f"代理 {proxies} 测试失败")
-        return {
-            "http": None,
-            "https": None,
-            "ftp": None,
-        }
+                async with self.session.get(
+                        url,
+                        proxy=proxy, ) as response:
+                    if response.status == 200:
+                        self.logger.info(f"代理 {proxy} 测试成功")
+                        return proxy
+            except ClientConnectorError:
+                self.logger.warning(f"代理 {proxy} 测试超时")
+            except ClientError as e:
+                self.logger.warning(f"代理 {proxy} 测试失败：{e}")
+        return None
 
     def __check_max_size(self, max_size: int) -> int:
         max_size = max(max_size, 0)
@@ -402,36 +394,53 @@ class Parameter:
         return ""
 
     def __check_default_mode(self, default_mode: str) -> list:
-        if default_mode in self.mode_reduced_values if self.__reduced else self.mode_complete_values:
-            return default_mode.split()[::-1]
-        if default_mode:
-            self.logger.warning(f"default_mode 参数 {default_mode} 设置错误")
-        return []
+        # TODO: 暂时禁用检查
+        return default_mode.split()[::-1]
+        # if default_mode in self.mode_values:
+        #     return default_mode.split()[::-1]
+        # if default_mode:
+        #     self.logger.warning(f"default_mode 参数 {default_mode} 设置错误")
+        # return []
 
-    def update_cookie(self) -> None:
-        # self.console.print("Update Cookie")
-        self.__update_cookie(
-            self.headers,
-            self.cookie,
-            self.cookie_cache,
-            False)
-        self.__update_cookie(
-            self.headers_tiktok,
-            self.cookie_tiktok,
-            self.cookie_tiktok_cache,
-            True, )
+    async def update_cookie(self) -> None:
+        if self.update_cookie_dy:
+            self.console.print("正在更新抖音 Cookie 参数，请稍等...", style=INFO)
+            await self.__update_cookie(
+                self.headers,
+                self.cookie,
+                self.cookie_cache,
+                False)
+            self.console.print("抖音 Cookie 参数更新完毕！", style=INFO)
+        if self.update_cookie_tk:
+            self.console.print("正在更新 TikTok Cookie 参数，请稍等...", style=INFO)
+            await self.__update_cookie(
+                self.headers_tiktok,
+                self.cookie_tiktok,
+                self.cookie_tiktok_cache,
+                True, )
+            self.__update_download_headers()
+            self.console.print("TikTok Cookie 参数更新完毕！", style=INFO)
 
-    def __update_cookie(
+    async def __update_cookie(
             self,
             headers: dict,
             cookie: dict,
             cache: str,
             tiktok=False) -> None:
         if cookie:
-            self.__add_cookie(cookie, tiktok, )
+            await self.__add_cookie(cookie, tiktok, )
             headers["Cookie"] = cookie_dict_to_str(cookie)
         elif cache:
-            headers["Cookie"] = self.__add_cookie(cache, tiktok, )
+            headers["Cookie"] = await self.__add_cookie(cache, tiktok, )
+
+    def __update_download_headers(self):
+        # key = "tt_chain_token"
+        # if tk := self.cookie_tiktok.get(key, ):
+        #     self.headers_download_tiktok["Cookie"] = f"{key}={tk}"
+        # else:
+        #     self.headers_download_tiktok["Cookie"] = self.cookie_tiktok_cache
+        self.headers_download_tiktok["Cookie"] = self.headers_tiktok.get(
+            "Cookie", "")
 
     @staticmethod
     def __generate_ffmpeg_object(ffmpeg_path: str) -> FFMPEG:
@@ -456,8 +465,8 @@ class Parameter:
             "cookie_tiktok": self.cookie_tiktok_cache or self.cookie_tiktok,
             "dynamic_cover": self.dynamic_cover,
             "original_cover": self.original_cover,
-            "proxies": self.proxies["https"] or "",
-            "proxies_tiktok": self.proxies_tiktok["https"] or "",
+            "proxy": self.proxy,
+            "proxy_tiktok": self.proxy_tiktok,
             "download": self.download,
             "max_size": self.max_size,
             "chunk": self.chunk,
@@ -467,18 +476,18 @@ class Parameter:
             "ffmpeg": self.ffmpeg.path or "",
         }
 
-    def update_settings_data(self, data: dict, ) -> dict:
+    async def update_settings_data(self, data: dict, ) -> dict:
         keys = list(self.check_rules.keys())[6:]
         for key, value in data.items():
             if key in keys:
                 # print(key, hasattr(self, key))  # 调试使用
                 setattr(self, key, self.check_rules[key](value))
-        self.__update_cookie_data(data)
+        await self.__update_cookie_data(data)
         self.settings.update(data := self.get_settings_data())
         # print(data)  # 调试使用
         return data
 
-    def __update_cookie_data(self, data: dict) -> None:
+    async def __update_cookie_data(self, data: dict) -> None:
         for i in ("cookie", "cookie_tiktok"):
             if c := data.get(i):
                 setattr(
@@ -488,4 +497,26 @@ class Parameter:
                         c,
                         False,
                         key=i))
-        self.update_cookie()
+        await self.update_cookie()
+
+    def __check_accounts_urls(self, data: list[dict]) -> list[dict]:
+        pass
+
+    def __check_mix_urls(self, data: list[dict]) -> list[dict]:
+        pass
+
+    def __check_owner_url(self, data: list[dict]) -> list[dict]:
+        pass
+
+    async def close_session(self) -> None:
+        await self.session.close()
+
+    def __generate_folders(self):
+        self.cache.mkdir(exist_ok=True)
+        self.temp.mkdir(exist_ok=True)
+
+    def __check_proxy_tiktok_region(self, region: str) -> str:
+        if region and isinstance(region, str):
+            return region
+        self.logger.warning("proxy_tiktok_region 参数设置错误")
+        return "SG"
